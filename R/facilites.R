@@ -1,4 +1,9 @@
 #' Get Facilities Data
+#' 
+#' Gives information about all facilities user can access.
+#' 
+#' @return tibble Containing information about each facility. License is a list-col with info about the license.
+#' 
 #' @export
 #' @note See url{https://api-co.metrc.com/Documentation/#Facilities.get_facilities_v1}
 

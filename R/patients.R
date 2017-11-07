@@ -50,6 +50,31 @@ metrc_get_patients_active <- function(license_number) {
   fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
 }
 
+#' Get Patient Status
+#' @export
+#' @note See \url{https://api-co.metrc.com/Documentation/#Patients.get_patients_v1_status_{patientLicenseNumber}}
+metrc_get_patient_status <- function(license_number, patient_license_number) {
+  url <- modify_url(
+    BASE_URL, path = paste0("patients/v1/status/", patient_license_number),
+    query = list(
+      licenseNumber = license_number
+    )
+  )
+  
+  resp <- GET(url, metrc_auth())
+  
+  if (http_type(resp) != "application/json") {
+    stop("metrc API did not return JSON.", call. = FALSE)
+  }
+  
+  if (http_error(resp)) {
+    stop(paste0("metrc API errored:\n", 
+                http_status(resp)$message), call. = FALSE)
+  }
+  
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+}
+
 #' Post New Patient
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Patients.post_patients_v1_add}

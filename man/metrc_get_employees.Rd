@@ -9,8 +9,11 @@ metrc_get_employees(license_number)
 \arguments{
 \item{license_number}{Employee license number}
 }
+\value{
+data.frame Containing information about the employess of a facility
+}
 \description{
-Get Employee Data
+This provides information about all employees at a specified facility.
 }
 \note{
 See \url{https://api-co.metrc.com/Documentation/#Employees.get_employees_v1}

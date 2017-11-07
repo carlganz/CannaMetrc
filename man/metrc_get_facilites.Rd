@@ -6,8 +6,11 @@
 \usage{
 metrc_get_facilites()
 }
+\value{
+tibble Containing information about each facility. License is a list-col with info about the license.
+}
 \description{
-Get Facilities Data
+Gives information about all facilities user can access.
 }
 \note{
 See url{https://api-co.metrc.com/Documentation/#Facilities.get_facilities_v1}
