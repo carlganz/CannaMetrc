@@ -1,5 +1,6 @@
 context("Test Oregon Sandbox")
-
+library(dplyr)
+library(purrr)
 ### load metrc info
 Sys.setenv(
   "metrc_software_key" = Sys.getenv("metrc_oregon_sandbox_software_key"),
@@ -15,7 +16,9 @@ test_that("Environmental vars exist", {
 })
 
 test_that("Facilites", {
-  facilities <<- metrc_get_facilities()
+  facilities <<- metrc_get_facilities() %>%
+    mutate_(license = ~map_chr(License, "Number"),
+            licenseType = ~map_chr(License, "LicenseType"))
   expect_true(nrow(facilities) > 0)
 })
 
@@ -31,21 +34,24 @@ test_that("Units of Measure", {
   expect_true(length(units) > 0)
 })
 
+random_name <- paste0(sample(LETTERS, 10), collapse = "")
+
 test_that("Strains", {
-  strains <<- metrc_get_strains_active(facilities$license[3])
+  strains <<- metrc_get_strains_active(facilities$license[4])
   expect_true(nrow(strains) > 0)
   strain <- metrc_get_strain(strains$Id[1])
   expect_true(nrow(strain) == 1)
-  expect_true(metrc_post_strains(facilities$license[3], "CannaData Test Strain", "None", NA, NA, 100, 0))
-  strains <<- metrc_get_strains_active(facilities$license[3])
-  expect_true(nrow(strain <- strains[strains$Name == "CannaData Test Strain", ]) == 1)
+  expect_true(metrc_post_strains(facilities$license[4], random_name, "None", NA, NA, 100, 0))
+  strains <<- metrc_get_strains_active(facilities$license[4])
+  expect_true(nrow(strain <- strains[strains$Name == random_name, ]) == 1)
+  strain <- strains %>% filter_(~Name == random_name)
   expect_true(strain$IndicaPercentage == 100)
-  expect_true(metrc_post_strains_update(facilities$license[3], strain$Id, "CannaData Test Strain", "None", NA, NA, 75, 25))
-  strains <<- metrc_get_strains_active(facilities$license[3])
+  expect_true(metrc_post_strains_update(facilities$license[4], strain$Id, random_name, "None", NA, NA, 75, 25))
+  strain <- metrc_get_strain(strain$Id)
   expect_true(strain$IndicaPercentage == 75)
-  expect_true(metrc_delete_strain(facilities$license[3]))
-  strains <<- metrc_get_strains_active(facilities$license[3])
-  expect_true(nrow(strains[strains$Name == "CannaData Test Strain", ]) == 0)
+  expect_true(metrc_delete_strain(facilities$license[4], strain$Id))
+  strains <<- metrc_get_strains_active(facilities$license[4])
+  expect_true(nrow(strains[strains$Name == random_name, ]) == 0)
 })
 
 test_that("Items", {
