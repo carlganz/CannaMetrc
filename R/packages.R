@@ -6,7 +6,7 @@
 metrc_get_package <- function(id) {
   
   url <- modify_url(
-    BASE_URL, path = paste0("packages/v1/", id)
+    BASE_URL(), path = paste0("packages/v1/", id)
   )
   
   resp <- GET(url, metrc_auth())
@@ -20,7 +20,8 @@ metrc_get_package <- function(id) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    map(shiny:::dropNullsOrEmpty) %>% as_tibble()
 }
 
 #' Get Active Packages
@@ -31,7 +32,7 @@ metrc_get_package <- function(id) {
 metrc_get_packages_active <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "packages/v1/active",
+    BASE_URL(), path = "packages/v1/active",
     query = list(
       licenseNumber = license_number
     )
@@ -48,7 +49,8 @@ metrc_get_packages_active <- function(license_number) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Onhold Packages
@@ -59,7 +61,7 @@ metrc_get_packages_active <- function(license_number) {
 metrc_get_packages_onhold <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "packages/v1/onhold",
+    BASE_URL(), path = "packages/v1/onhold",
     query = list(
       licenseNumber = license_number
     )
@@ -76,7 +78,8 @@ metrc_get_packages_onhold <- function(license_number) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Inactive Packages
@@ -87,7 +90,7 @@ metrc_get_packages_onhold <- function(license_number) {
 metrc_get_packages_inactive <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "packages/v1/inactive",
+    BASE_URL(), path = "packages/v1/inactive",
     query = list(
       licenseNumber = license_number
     )
@@ -104,7 +107,8 @@ metrc_get_packages_inactive <- function(license_number) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Package Types
@@ -114,7 +118,7 @@ metrc_get_packages_inactive <- function(license_number) {
 metrc_get_packages_types <- function() {
   
   url <- modify_url(
-    BASE_URL, path = "packages/v1/types"
+    BASE_URL(), path = "packages/v1/types"
   )
   
   resp <- GET(url, metrc_auth())
@@ -128,7 +132,8 @@ metrc_get_packages_types <- function() {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    unlist()
 }
 
 #' Post New Package
@@ -143,39 +148,41 @@ metrc_post_packages_create <- function(license_number,
                                    unit_of_measure,
                                    is_production_batch,
                                    production_batch_number,
-                                   product_requres_remediation,
+                                   product_requires_remediation,
                                    actual_date,
                                    ingredients) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/create",
+    BASE_URL(), path = "packages/v1/create",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
-               body = data.frame(
+  resp <- POST(url, metrc_auth(), encode = "json",
+               body = list(list(
                  Tag = tag,
                  Item = item,
                  Quantity = quantity,
                  UnitOfMeasure = unit_of_measure,
                  IsProductionBatch = is_production_batch,
                  ProductionBatchNumber = production_batch_number,
-                 ProductRequresRemediation = product_requres_remediation,
+                 ProductRequiresRemediation = product_requires_remediation,
                  ActualDate = actual_date,
-                 Ingredients = ingredients
-               ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+                 Ingredients = list(ingredients)
+               )))
   
   if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 
@@ -191,39 +198,41 @@ metrc_post_packages_testing <- function(license_number,
                                    unit_of_measure,
                                    is_production_batch,
                                    production_batch_number,
-                                   product_requres_remediation,
+                                   product_requires_remediation,
                                    actual_date,
                                    ingredients) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/create/testing",
+    BASE_URL(), path = "packages/v1/create/testing",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
-               body = data.frame(
+  resp <- POST(url, metrc_auth(), encode = "json",
+               body = list(list(
                  Tag = tag,
                  Item = item,
                  Quantity = quantity,
                  UnitOfMeasure = unit_of_measure,
                  IsProductionBatch = is_production_batch,
                  ProductionBatchNumber = production_batch_number,
-                 ProductRequresRemediation = product_requres_remediation,
+                 ProductRequiresRemediation = product_requires_remediation,
                  ActualDate = actual_date,
-                 Ingredients = ingredients
-               ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+                 Ingredients = list(ingredients)
+               )))
   
   if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post New Package Plantings
@@ -240,13 +249,13 @@ metrc_post_packages_plantings <- function(license_number,
                                    strain_name,
                                    planted_date) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/create/plantings",
+    BASE_URL(), path = "packages/v1/create/plantings",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
+  resp <- POST(url, metrc_auth(),  encode = "json",
                body = list(
                  PackageLabel = package_label,
                  PackageAdjustmentAmount = package_adjustment_amount,
@@ -258,16 +267,17 @@ metrc_post_packages_plantings <- function(license_number,
                  PlantedDate = planted_date
                ))
   
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 
@@ -278,28 +288,30 @@ metrc_post_packages_plantings <- function(license_number,
 metrc_post_packages_change <- function(license_number,
                                              label, item) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/change/item",
+    BASE_URL(), path = "packages/v1/change/item",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
-               body = list(
+  resp <- POST(url, metrc_auth(),  encode = "json",
+               body = data.frame(
                  Label = label,
                  Item = item
                ))
   
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
   if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post Adjust Package
@@ -309,32 +321,34 @@ metrc_post_packages_adjust <- function(license_number, label, quantity,
                                    unit_of_measure, adjustment_reason,
                                    adjustment_date, reason_note) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/adjust",
+    BASE_URL(), path = "packages/v1/adjust",
     query = list(
       licenseNumber = license_number
     )
   )
   
   resp <- POST(url, metrc_auth(), 
+               encode = "json",
                body = data.frame(
                  Label = label,
                  Quantity = quantity, 
-                 UnitOfMesaure = unit_of_measure, 
+                 UnitOfMeasure = unit_of_measure, 
                  AdjustmentReason = adjustment_reason,
                  AdjustmentDate = adjustment_date, 
                  ReasonNote = reason_note
                ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post Finish Package
@@ -342,28 +356,30 @@ metrc_post_packages_adjust <- function(license_number, label, quantity,
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_finish}
 metrc_post_packages_finish <- function(license_number, label, actual_date) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/finish",
+    BASE_URL(), path = "packages/v1/finish",
     query = list(
       licenseNumber = license_number
     )
   )
   
   resp <- POST(url, metrc_auth(), 
+               encode= "json",
                body = data.frame(
                  Label = label,
                  ActualDate = actual_date
                ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
+
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post Unfinish Package
@@ -371,27 +387,28 @@ metrc_post_packages_finish <- function(license_number, label, actual_date) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_unfinish}
 metrc_post_packages_unfinish <- function(license_number, label) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/unfinish",
+    BASE_URL(), path = "packages/v1/unfinish",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
+  resp <- POST(url, metrc_auth(), encode="json",
                body = data.frame(
                  Label = label
                ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post Remediate Package
@@ -400,13 +417,13 @@ metrc_post_packages_unfinish <- function(license_number, label) {
 metrc_post_packages_remediate <- function(license_number, package_label, remediation_method_name,
                                          remediation_date, remediation_steps) {
   url <- modify_url(
-    BASE_URL, path = "packages/v1/unfinish",
+    BASE_URL(), path = "packages/v1/unfinish",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
+  resp <- POST(url, metrc_auth(),  encode = "json",
                body = data.frame(
                  PackageLabel = package_label, 
                  RemediationMethodName = remediation_method_name,
@@ -414,14 +431,15 @@ metrc_post_packages_remediate <- function(license_number, package_label, remedia
                  RemediationSteps = remediation_steps
                ))
   
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }

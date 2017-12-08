@@ -7,7 +7,7 @@ metrc_get_item <- function(id) {
   stopifnot(is.integer(id))
   
   url <- modify_url(
-    BASE_URL, path = paste0("items/v1/", id)
+    BASE_URL(), path = paste0("items/v1/", id)
   )
   
   resp <- GET(url, metrc_auth())
@@ -21,7 +21,8 @@ metrc_get_item <- function(id) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
+    map(shiny:::dropNullsOrEmpty) %>% as_tibble()
 }
 
 #' Get Active Items
@@ -32,7 +33,7 @@ metrc_get_item <- function(id) {
 metrc_get_items_active <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "items/v1/active",
+    BASE_URL(), path = "items/v1/active",
     query = list(
       licenseNumber = license_number
     )
@@ -49,7 +50,8 @@ metrc_get_items_active <- function(license_number) {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)  %>% 
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Items Categories
@@ -59,7 +61,7 @@ metrc_get_items_active <- function(license_number) {
 metrc_get_items_categories <- function() {
   
   url <- modify_url(
-    BASE_URL, path = "items/v1/categories"
+    BASE_URL(), path = "items/v1/categories"
   )
   
   resp <- GET(url, metrc_auth())
@@ -73,7 +75,8 @@ metrc_get_items_categories <- function() {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    bind_rows()
 }
 
 #' Post New Items
@@ -86,37 +89,41 @@ metrc_post_items_create <- function(license_number,
                                  name,
                                  unit_of_measurement,
                                  strain,
+                                 unit_thc_content,
                                  unit_thc_content_unit_of_measure,
                                  unit_weight,
                                  unit_weight_unit_of_measure) {
   url <- modify_url(
-    BASE_URL, path = "items/v1/create",
+    BASE_URL(), path = "items/v1/create",
     query = list(
       licenseNumber = license_number
     )
   )
   
-  resp <- POST(url, metrc_auth(), 
+  resp <- POST(url, metrc_auth(), encode = "json",
                body = data.frame(
                  ItemCategory = item_category,
                  Name = name,
-                 UnitOfMeasurement = unit_of_measurement,
+                 UnitOfMeasure = unit_of_measurement,
                  Strain = strain,
+                 UnitThcContent = unit_thc_content,
                  UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
                  UnitWeight = unit_weight,
                  UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
                ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Post Update Items
@@ -130,38 +137,43 @@ metrc_post_items_update <- function(license_number,
                                  name,
                                  unit_of_measurement,
                                  strain,
+                                 unit_thc_content,
                                  unit_thc_content_unit_of_measure,
                                  unit_weight,
                                  unit_weight_unit_of_measure) {
   url <- modify_url(
-    BASE_URL, path = "items/v1/update",
+    BASE_URL(), path = "items/v1/update",
     query = list(
       licenseNumber = license_number
     )
   )
   
   resp <- POST(url, metrc_auth(), 
+               encode = "json",
                body = data.frame(
                  Id = id,
                  ItemCategory = item_category,
                  Name = name,
-                 UnitOfMeasurement = unit_of_measurement,
+                 UnitOfMeasure = unit_of_measurement,
                  Strain = strain,
+                 UnitThcContent = unit_thc_content,
                  UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
                  UnitWeight = unit_weight,
                  UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
                ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Delete Items
@@ -175,23 +187,24 @@ metrc_delete_item <- function(license_number,
   stopifnot(is.integer(id))
   
   url <- modify_url(
-    BASE_URL, path = paste0("items/v1/", id),
+    BASE_URL(), path = paste0("items/v1/", id),
     query = list(
       licenseNumber = license_number
     )
   )
   
   resp <- DELETE(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
+
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n", 
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 

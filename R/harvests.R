@@ -7,7 +7,7 @@ metrc_get_harvest <- function(id) {
   stopifnot(is.integer(id))
   
   url <- modify_url(
-    BASE_URL, path = paste0("harvests/v1/", id)
+    BASE_URL(), path = paste0("harvests/v1/", id)
   )
   
   resp <- GET(url, metrc_auth())
@@ -31,7 +31,7 @@ metrc_get_harvest <- function(id) {
 metrc_get_harvests_active <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/active",
+    BASE_URL(), path = "harvests/v1/active",
     query = list(
       licenseNumber = license_number
     )
@@ -58,7 +58,7 @@ metrc_get_harvests_active <- function(license_number) {
 metrc_get_harvests_onhold <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/onhold",
+    BASE_URL(), path = "harvests/v1/onhold",
     query = list(
       licenseNumber = license_number
     )
@@ -85,7 +85,7 @@ metrc_get_harvests_onhold <- function(license_number) {
 metrc_get_harvests_inactive <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/inactive",
+    BASE_URL(), path = "harvests/v1/inactive",
     query = list(
       licenseNumber = license_number
     )
@@ -125,7 +125,7 @@ metrc_post_harvests_createpackage <- function(license_number,
                                actual_date) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/createpackages",
+    BASE_URL(), path = "harvests/v1/createpackages",
     query = list(
       licenseNumber = license_number
     )
@@ -171,7 +171,7 @@ metrc_post_harvests_removewaste <- function(license_number,
                                actual_date) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/removewaste",
+    BASE_URL(), path = "harvests/v1/removewaste",
     query = list(
       licenseNumber = license_number
     )
@@ -206,7 +206,7 @@ metrc_post_harvests_finish <- function(license_number,
                                      actual_date) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/finish",
+    BASE_URL(), path = "harvests/v1/finish",
     query = list(
       licenseNumber = license_number
     )
@@ -237,7 +237,7 @@ metrc_post_harvests_finish <- function(license_number,
 metrc_post_harvests_unfinish <- function(license_number, id) {
   
   url <- modify_url(
-    BASE_URL, path = "harvests/v1/unfinish",
+    BASE_URL(), path = "harvests/v1/unfinish",
     query = list(
       licenseNumber = license_number
     )

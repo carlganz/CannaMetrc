@@ -4,7 +4,7 @@
 
 metrc_get_units <- function() {
   url <- modify_url(
-    BASE_URL, path = "unitsofmeasure/v1/active"
+    BASE_URL(), path = "unitsofmeasure/v1/active"
   )
   
   resp <- GET(url, metrc_auth())
@@ -18,6 +18,7 @@ metrc_get_units <- function() {
                 http_status(resp)$message), call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
+    bind_rows()
   
 }

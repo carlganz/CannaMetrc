@@ -5,8 +5,8 @@
 \title{Post New Items}
 \usage{
 metrc_post_items_create(license_number, item_category, name,
-  unit_of_measurement, strain, unit_thc_content_unit_of_measure, unit_weight,
-  unit_weight_unit_of_measure)
+  unit_of_measurement, strain, unit_thc_content,
+  unit_thc_content_unit_of_measure, unit_weight, unit_weight_unit_of_measure)
 }
 \arguments{
 \item{license_number}{Facility license number}

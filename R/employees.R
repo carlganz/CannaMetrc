@@ -9,7 +9,7 @@
 #' @export
 metrc_get_employees <- function(license_number) {
   url <- modify_url(
-    BASE_URL, path = "employees/v1",
+    BASE_URL(), path = "employees/v1",
     query = list(
       licenseNumber = license_number
     )

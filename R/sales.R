@@ -2,7 +2,7 @@
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.get_sales_v1_customertypes}
 metrc_get_sales_customer_types <- function() {
-  url <- modify_url(BASE_URL, path = "sales/v1/customertypes")
+  url <- modify_url(BASE_URL(), path = "sales/v1/customertypes")
   
   resp <- GET(url, metrc_auth())
   
@@ -16,14 +16,15 @@ metrc_get_sales_customer_types <- function() {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    unlist()
 }
 
 #' Get Sales Receipts
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.get_sales_v1_receipts}
 metrc_get_sales_receipts <- function(license_number) {
-  url <- modify_url(BASE_URL, path = "sales/v1/receipts",
+  url <- modify_url(BASE_URL(), path = "sales/v1/receipts",
                     query = list(licenseNumber = license_number))
   
   resp <- GET(url, metrc_auth())
@@ -38,7 +39,20 @@ metrc_get_sales_receipts <- function(license_number) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% {
+    tibble(
+      Id = map_int(., "Id"),
+      ReceiptNumber = map_chr(., "ReceiptNumber"),
+      SalesDateTime = map_chr(., "SalesDateTime"),
+      SalesCustomerType = map_chr(., "SalesCustomerType"),
+      PatientLicenseNumber = map_chr(., "PatientLicenseNumber"),
+      CaregiverLicenseNumber = map_chr(., "CaregiverLicenseNumber"),
+      TotalPackages = map_int(., "TotalPackages"),
+      TotalPrice = map_dbl(., "TotalPrice"),
+      Transactions = map(., "Transactions") %>%
+        map(function(x) {x  %>% map(shiny:::dropNullsOrEmpty) %>% bind_rows()})
+    )
+  }
 }
 
 #' Get Receipt
@@ -47,7 +61,7 @@ metrc_get_sales_receipts <- function(license_number) {
 metrc_get_sales_receipt <- function(id) {
   stopifnot(is.integer(id))
   
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/receipts/",id))
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/receipts/",id))
   
   resp <- GET(url, metrc_auth())
   
@@ -61,21 +75,31 @@ metrc_get_sales_receipt <- function(id) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)  %>% {
+    tibble(
+      Id = .[["Id"]],
+      ReceiptNumber = .[["ReceiptNumber"]],
+      SalesDateTime = .[["SalesDateTime"]],
+      SalesCustomerType = .[["SalesCustomerType"]],
+      PatientLicenseNumber = .[["PatientLicenseNumber"]],
+      CaregiverLicenseNumber = .[["CaregiverLicenseNumber"]],
+      TotalPackages = .[["TotalPackages"]],
+      TotalPrice = .[["TotalPrice"]],
+      Transactions = .[["Transactions"]] %>% 
+        map(shiny:::dropNullsOrEmpty) %>% bind_rows() %>% list()
+    )
+  }
+    
 }
 
 #' Post Receipts
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.post_sales_v1_receipts}
 metrc_post_sales_receipt <- function(license_number, sales) {
-  url <- modify_url(BASE_URL, path = "sales/v1/receipts",
+  url <- modify_url(BASE_URL(), path = "sales/v1/receipts",
                     query = list(licenseNumber = license_number))
   
-  resp <- POST(url, metrc_auth(), body = sales)
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  resp <- POST(url, metrc_auth(), body = sales, encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -83,7 +107,12 @@ metrc_post_sales_receipt <- function(license_number, sales) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Put Receipts
@@ -91,14 +120,10 @@ metrc_post_sales_receipt <- function(license_number, sales) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.put_sales_v1_receipts}
 metrc_put_sales_receipt <- function(license_number, sales) {
   
-  url <- modify_url(BASE_URL, path = "sales/v1/receipts",
+  url <- modify_url(BASE_URL(), path = "sales/v1/receipts",
                     query = list(licenseNumber = license_number))
   
-  resp <- PUT(url, metrc_auth(), body = sales)
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  resp <- PUT(url, metrc_auth(), body = sales, encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -106,7 +131,12 @@ metrc_put_sales_receipt <- function(license_number, sales) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Delete Receipt
@@ -115,14 +145,10 @@ metrc_put_sales_receipt <- function(license_number, sales) {
 metrc_delete_sales_receipt <- function(license_number, id) {
   stopifnot(is.integer(id))
   
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/receipts/", id),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/receipts/", id),
                     query = list(licenseNumber = license_number))
   
   resp <- DELETE(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -130,14 +156,19 @@ metrc_delete_sales_receipt <- function(license_number, id) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Get Sales Transactions
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.get_sales_v1_transactions}
 metrc_get_sales_transactions <- function(license_number) {
-  url <- modify_url(BASE_URL, path = "sales/v1/transactions",
+  url <- modify_url(BASE_URL(), path = "salestransactions/v1",
                     query = list(licenseNumber = license_number))
   
   resp <- GET(url, metrc_auth())
@@ -160,7 +191,7 @@ metrc_get_sales_transactions <- function(license_number) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Sales.get_sales_v1_transactions_{date}}
 metrc_get_sales_transactions_date <- function(license_number, date) {
   date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
   resp <- GET(url, metrc_auth())
@@ -175,7 +206,8 @@ metrc_get_sales_transactions_date <- function(license_number, date) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Post Sales Transactions by Date
@@ -184,7 +216,7 @@ metrc_get_sales_transactions_date <- function(license_number, date) {
 metrc_post_sales_transactions_date <- function(license_number, date, package_label,
                                                quantity, unit_of_measure, total_amount) {
   date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
   resp <- POST(url, metrc_auth(), body = data.frame(
@@ -192,11 +224,7 @@ metrc_post_sales_transactions_date <- function(license_number, date, package_lab
     Quantity = quantity, 
     UnitOfMeasure = unit_of_measure, 
     TotalAmount = total_amount
-  ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  ), encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -204,7 +232,12 @@ metrc_post_sales_transactions_date <- function(license_number, date, package_lab
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Put Sales Transactions by Date
@@ -213,7 +246,7 @@ metrc_post_sales_transactions_date <- function(license_number, date, package_lab
 metrc_put_sales_transactions_date <- function(license_number, date, package_label,
                                                quantity, unit_of_measure, total_amount) {
   date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
   resp <- PUT(url, metrc_auth(), body = data.frame(
@@ -221,26 +254,27 @@ metrc_put_sales_transactions_date <- function(license_number, date, package_labe
     Quantity = quantity, 
     UnitOfMeasure = unit_of_measure, 
     TotalAmount = total_amount
-  ))
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
+  ), encode = "json")
+
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
                 http_status(resp)$message),
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Get Deliveries
 #' @export
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.get_sales_v1_deliveries}
 metrc_get_deliveries <- function(license_number) {
-  url <- modify_url(BASE_URL, path = "sales/v1/deliveries",
+  url <- modify_url(BASE_URL(), path = "sales/v1/deliveries",
                     query = list(licenseNumber = license_number))
   
   resp <- GET(url, metrc_auth())
@@ -255,15 +289,16 @@ metrc_get_deliveries <- function(license_number) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
+    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Delivery Info
 #' @export
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.get_sales_v1_deliveries}
-metrc_get_deliveries <- function(license_number, delivery_id) {
+metrc_get_delivery <- function(license_number, delivery_id) {
   stopifnot(is.integer(delivery_id))
-  url <- modify_url(BASE_URL, 
+  url <- modify_url(BASE_URL(), 
                     path = paste0("sales/v1/delivery/", delivery_id),
                     query = list(licenseNumber = license_number))
   
@@ -279,14 +314,15 @@ metrc_get_deliveries <- function(license_number, delivery_id) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
+    map(shiny:::dropNullsOrEmpty) %>% as_tibble()
 }
 
 #' Return Reasons
 #' @export
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.get_sales_v1_delivery_returnreasons}
 metrc_get_return_reasons <- function() {
-  url <- modify_url(BASE_URL, 
+  url <- modify_url(BASE_URL(), 
                     path = "sales/v1/delivery/returnreasons")
   
   resp <- GET(url, metrc_auth())
@@ -301,7 +337,8 @@ metrc_get_return_reasons <- function() {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+    unlist()
 }
 
 #' Post Deliveries
@@ -309,14 +346,10 @@ metrc_get_return_reasons <- function() {
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.post_sales_v1_deliveries}
 metrc_post_deliveries <- function(license_number, deliveries) {
   # date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
-  resp <- POST(url, metrc_auth(), body = deliveries)
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  resp <- POST(url, metrc_auth(), body = deliveries, encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -324,7 +357,12 @@ metrc_post_deliveries <- function(license_number, deliveries) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Put Deliveries
@@ -332,14 +370,10 @@ metrc_post_deliveries <- function(license_number, deliveries) {
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.put_sales_v1_deliveries}
 metrc_put_deliveries <- function(license_number, deliveries) {
   # date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
-  resp <- PUT(url, metrc_auth(), body = deliveries)
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  resp <- PUT(url, metrc_auth(), body = deliveries, encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -347,7 +381,12 @@ metrc_put_deliveries <- function(license_number, deliveries) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Complete Deliveries
@@ -355,14 +394,10 @@ metrc_put_deliveries <- function(license_number, deliveries) {
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.put_sales_v1_deliveries_complete}
 metrc_complete_deliveries <- function(license_number, deliveries) {
   # date <- format(as.Date(date), "%Y-%m-%d")
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/transactions/", date),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/transactions/", date),
                     query = list(licenseNumber = license_number))
   
-  resp <- PUT(url, metrc_auth(), body = deliveries)
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
+  resp <- PUT(url, metrc_auth(), body = deliveries, encode = "json")
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -370,7 +405,12 @@ metrc_complete_deliveries <- function(license_number, deliveries) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
 
 #' Delete Delivery
@@ -379,14 +419,10 @@ metrc_complete_deliveries <- function(license_number, deliveries) {
 metrc_delete_sales_receipt <- function(license_number, id) {
   stopifnot(is.integer(id))
   
-  url <- modify_url(BASE_URL, path = paste0("sales/v1/delivery/", id),
+  url <- modify_url(BASE_URL(), path = paste0("sales/v1/delivery/", id),
                     query = list(licenseNumber = license_number))
   
   resp <- DELETE(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
   
   if (http_error(resp)) {
     stop(paste0("metrc API errored:\n",
@@ -394,11 +430,11 @@ metrc_delete_sales_receipt <- function(license_number, id) {
          call. = FALSE)
   }
   
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (http_type(resp) != "application/json") {
+    return(TRUE)
+  } else {
+    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  }
+  
 }
-
-
-
-
-
 

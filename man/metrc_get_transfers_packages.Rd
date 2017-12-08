@@ -2,20 +2,13 @@
 % Please edit documentation in R/transfers.R
 \name{metrc_get_transfers_packages}
 \alias{metrc_get_transfers_packages}
-\alias{metrc_get_transfers_packages}
 \title{Get Packages}
 \usage{
-metrc_get_transfers_packages()
-
-metrc_get_transfers_packages()
+metrc_get_transfers_packages(id)
 }
 \description{
 Get Packages
-
-Get Package States
 }
 \note{
-See \url{https://api-co.metrc.com/Documentation/#Transfers.get_transfers_v1_{id}_deliveries}
-
-See \url{https://api-co.metrc.com/Documentation/#Transfers.get_transfers_v1_delivery_{id}_packages}
+See \url{https://api-or.metrc.com/Documentation/#Transfers.get_transfers_v1_delivery_{id}_packages}
 }

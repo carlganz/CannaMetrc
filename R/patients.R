@@ -6,7 +6,7 @@ metrc_get_patient <- function(id) {
   stopifnot(is.integer(id))
   
   url <- modify_url(
-    BASE_URL, path = paste0("patients/v1/", id)
+    BASE_URL(), path = paste0("patients/v1/", id)
   )
   
   resp <- GET(url, metrc_auth())
@@ -30,7 +30,7 @@ metrc_get_patient <- function(id) {
 metrc_get_patients_active <- function(license_number) {
   
   url <- modify_url(
-    BASE_URL, path = "patients/v1/active",
+    BASE_URL(), path = "patients/v1/active",
     query = list(
       licenseNumber = license_number
     )
@@ -55,7 +55,7 @@ metrc_get_patients_active <- function(license_number) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Patients.get_patients_v1_status_{patientLicenseNumber}}
 metrc_get_patient_status <- function(license_number, patient_license_number) {
   url <- modify_url(
-    BASE_URL, path = paste0("patients/v1/status/", patient_license_number),
+    BASE_URL(), path = paste0("patients/v1/status/", patient_license_number),
     query = list(
       licenseNumber = license_number
     )
@@ -85,7 +85,7 @@ metrc_post_patients <- function(license_number, patient_license_number,
                                    recommended_smokable_quantity,
                                    actual_date) {
   url <- modify_url(
-    BASE_URL, path = "patients/v1/add",
+    BASE_URL(), path = "patients/v1/add",
     query = list(
       licenseNumber = license_number
     )
@@ -123,7 +123,7 @@ metrc_post_patients_update <- function(license_number, patient_license_number,
                                    recommended_smokable_quantity,
                                    actual_date) {
   url <- modify_url(
-    BASE_URL, path = "patients/v1/update",
+    BASE_URL(), path = "patients/v1/update",
     query = list(
       licenseNumber = license_number
     )
@@ -158,7 +158,7 @@ metrc_post_patient_delete <- function(license_number, id) {
   stopifnot(is.integer(id))
   
   url <- modify_url(
-    BASE_URL, path = paste0("patients/v1/", id),
+    BASE_URL(), path = paste0("patients/v1/", id),
     query = list(
       licenseNumber = license_number
     )

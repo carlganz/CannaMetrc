@@ -2,20 +2,13 @@
 % Please edit documentation in R/transfers.R
 \name{metrc_get_transfers_outgoing}
 \alias{metrc_get_transfers_outgoing}
-\alias{metrc_get_transfers_outgoing}
 \title{Get Outgoing Transfers}
 \usage{
-metrc_get_transfers_outgoing(license_number)
-
 metrc_get_transfers_outgoing(license_number)
 }
 \description{
 Get Outgoing Transfers
-
-Get Rejected Transfers
 }
 \note{
 See \url{https://api-co.metrc.com/Documentation/#Transfers.get_transfers_v1_outgoing}
-
-See \url{https://api-co.metrc.com/Documentation/#Transfers.get_transfers_v1_rejected}
 }

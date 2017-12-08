@@ -6,7 +6,7 @@
 \usage{
 metrc_post_packages_testing(license_number, tag, item, quantity,
   unit_of_measure, is_production_batch, production_batch_number,
-  product_requres_remediation, actual_date, ingredients)
+  product_requires_remediation, actual_date, ingredients)
 }
 \arguments{
 \item{ingredients}{list-col}
