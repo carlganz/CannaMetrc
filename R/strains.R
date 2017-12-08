@@ -19,7 +19,7 @@ metrc_get_strain <- function(id) {
   }
   
   fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
-    map(shiny:::dropNullsOrEmpty) %>% as_tibble()
+    shiny:::dropNullsOrEmpty() %>% as_tibble()
 }
 
 #' Get Active Strains
@@ -62,6 +62,7 @@ metrc_post_strains <- function(license_number, name, testing_status, thc_level,
   ))
   
   if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
     stop(paste0("metrc API errored:\n",
                 http_status(resp)$message),
          call. = FALSE)
@@ -114,6 +115,7 @@ metrc_delete_strain <- function(license_number, id) {
   resp <- DELETE(url, metrc_auth())
   
   if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
     stop(paste0("metrc API errored:\n",
                 http_status(resp)$message),
          call. = FALSE)
