@@ -9,77 +9,81 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The Metrc API allows third-party software to comply with many state's Marijuana regulations. Metrc provides documentation for the API [here](https://api-co.metrc.com/Documentation/). This document expands about Metrc's documentation.
+The Metrc API allows third-party software to comply with many state's Cannabis regulations. Metrc provides documentation for the APIs for each state ([Colorado](https://api-co.metrc.com/Documentation/), [Oregon](https://api-or.metrc.com/Documentation/), [Maryland](https://api-md.metrc.com/Documentation/), and [Alaska](https://api-ak.metrc.com/Documentation/) for now). This document expands upon Metrc's documentation, so you should definitely take a look at their documentation first.
 
-## Intro
+# Intro
 
-Managing information from seed to sale involves a lot of steps, and many different data structures that are not discussed in detail in Metrc's documentation. We will go through each section of the Metrc API and describe the data structures used. We will also give more detailed examples.
+Managing information from seed to sale involves a lot of steps, and many different data structures that are not discussed in detail in Metrc's documentation. We will go through each section of the Metrc API and describe its utility.
 
 ## Facilities
 
-Every area where Marijuana is grown, dried, processed or sold has to be approved by the state. Information about all facilities a user has access to is available at the facilities endpoint. Most API calls require the facility's license number as a parameter, so we depend on this endpoint a lot.
+Every area where Cannabis is grown, dried, processed or sold has to be approved by the state. Information about all facilities a user has access to is available at the facilities endpoint. Most API calls require the facility's license number as a parameter, so we depend on this endpoint a lot for the facility ID number.
 
 ## Rooms
 
-Facilities contain rooms for individual tasks. Very little information is kept about rooms except for their name. The rooms endpoint has information about rooms, and the ability to edit, create, and delete rooms.
+Facilities contain rooms for individual tasks. Very little information is kept about rooms except for their name. The rooms endpoint has information about rooms, and the ability to edit, create, and delete rooms. Rooms are used exclusively during the growing process to indicate where in a facility a plant is located. Rooms do not have to be seperate physical locations. 
 
 ## Employees
 
-All workers in the Marijuana business must be approved by the state. They are registered on a per facility basis, so each worker must be approved for each facility they work in. Information about a facility's employees is accessible via the employees endpoint. Seemingly the only information is the employee's name, and their license number. Information about employees does not appear to be used anywhere else in the API (i.e. you don't have to enter the employee who processed each sale/transaction).
+This endpoint only exists in Colorado. All workers in the Cannabis business must be approved by the state. They are registered on a per facility basis, so each worker must be approved for each facility they work in. Information about a facility's employees is accessible via the employees endpoint. Seemingly the only information is the employee's name, and their license number. Information about employees does not appear to be used anywhere else in the API (i.e. you don't have to enter the employee who processed each sale). The employee has half of the API key required to access Metrc API so it infers which employee is performing what actions based on the API key being used (and which software is being used by the other half the key). 
 
 You cannot add employees using the API.
 
 ## Strains
 
-Marijuana has many different strains, which have different attributes. The strains endpoint lets you view, edit, add, and delete information about strains. If the strain has been tested, lab information about the strain is available. All marijuana has a strain associated with it starting at seed or clone. 
+Cannabis has many different strains, which have different attributes. The strains endpoint lets you view, edit, add, and delete information about strains. If the strain has been tested, lab information about the strain is available. All Cannabis has a strain associated with it starting at seed or clone. Items (discussed below) also hold a strain attribute. 
+
+Strains like employees, and rooms are facility specific. 
 
 ## Units of Measure
 
-This endpoint provides all the acceptable units of measure. It has no parameters. This information is useful because it defines the inputs used by many other endpoints. There are two types of units: count-based, and weight-based. Items like clones are sold by unit, and not by weight, so we would use the "each" quantity type. Flower is sold by weight so we would use one of the weight-based quantities.
+This endpoint provides all the acceptable units of measure. It has no parameters. This information is useful because it defines the inputs used by many other endpoints. There are two types of units: count-based, and weight-based. Items like clones are sold by unit, and not by weight, so we would use the "each" quantity type. Flower is sold by weight so we would use one of the weight-based quantities, preferably grams.
 
 ## Items
 
 Items are types of products. Shops do not sell items specifically, but rather packages (discussed below), which are specific instances of items. Items are facility specific. A specific strain of bud would be an item. 
 
-All items have a category from the categories endpoint, which defines some of the item's attributes.
+All items have a category from the categories endpoint, which defines some of the item's attributes. These are defined by the state.
 
-Items can be updated, and removed. You can also view individual items, and all active items. 
+Items can be created, updated, and removed. You can also view individual items, and all active items. 
 
-Items have a unit of measure, but do not have any quantity. Items describe packages which contain quantities. 
+Items have a unit of measure, but do not have any quantity. 
 
 ## Packages
 
-Packages are physical quantities of items. You should think of a package as a batch of an item. The packages endpoint has a lot of info including two ways to access specific packages, and info for all active, onhold, or inactive packages. 
+Packages are physical quantities of items in a container. You should think of a package as a batch of an item except often times batches become multiple packages. The packages endpoint has a lot of info including two ways to access specific packages, and info for all active, onhold, or inactive packages. 
 
-You would think the types endpoint would be different package types, but packages don't have those attributes, the items they are an instance of do, so the items endpoint contains what you would consider the different types of packages. The types endpoint here indicates that harvested plants can result in either: an item, or seeds (or clones, but not really since only vegetative plants can be harvested into clones real life. See [harvest](#harvests)). 
+Packages are placed on-hold by the state, if the product requires testing. Once a test package is generated from the package, sent to a lab, and approved it will shift to active. 
 
-The create plantings endpoint here is for seeds/clones (probably just seeds in practice) derived from existing packages. 
+The type endpoint seems to indicate that all packages are either a product, immature plant, or vegetative plant (can't sell flowering plants). 
 
-The create endpoint allows you to take packages and turn them into other packages (i.e. 10 Ounces of bud used to generate hash).
+The create plantings endpoint here is for seeds/clones that were packages. Suppose we want to transfer clones from one growing facility to another. Only packages can be transferred so we would convert plant batches to a package, transfer the package, and then create plant batches from that package.
+
+The create endpoint allows you to take packages and turn them into other packages (i.e. 10 ounces of bud used to generate hash). The IsProductionBatch variable asks whether the product is used to create an entirely new product like an edible. 
 
 The testing endpoint is for creating packages that will be tested (and presumably consumed in the testing process).
 
 All changes in quantities must be reported using the adjust endpoint. 
 
-Similarly, any actions taken to alter to the package (i.e. drying the buds) must be reported using remediation endpoint. When creating a package, we must indicate whether it requires remediation, which is a fancy way of asking "is this a final product or does is require further processing?" Requires remediation means requires further processing. 
+Similarly, any actions taken to alter the package (i.e. drying the buds) must be reported using remediation endpoint. When creating a package, we must indicate whether it requires remediation, which is a fancy way of asking "is this a final product or does it require fixing?" Requires remediation means requires fixing. 
 
-When you have zero inventory of a package you have the option to "finish" the package, which renders it inactive. If you do this, and then wish to undo this the unfinish endpoint lets you activate inactive packages. The reason packages are not automatically marked inactive when their inventory goes to zero is that in theory the quantity can be adjusted to add more. Suppose a package weighs 2 Ounces, and is placed in a jar to be sold at the shop in a humidor. Let's say the batch adds some weight do to the humidity, so once the shop sells the 2 Ounces in the system there is still a residual quantity left in the jar. We would not want to automatically inactivate this package because there is still some remaining quantity. The shop must add this residual quantity using the adjust endpoint, and explicitly finish the package when the inventory is exhausted. 
+When you have zero inventory of a package you have the option to "finish" the package, which renders it inactive. If you do this, and then wish to undo this the unfinish endpoint lets you activate inactive packages. The reason packages are not automatically marked inactive when their inventory goes to zero is that in theory the quantity can be adjusted to add more. Suppose a package weighs 2 ounces, and is placed in a jar to be sold at the shop in a humidor. Let's say the batch adds some weight due to the humidity, so once the shop sells the 2 ounces in the system there is still a residual quantity left in the jar. We would not want to automatically inactivate this package because there is still some remaining quantity. The shop must add this residual quantity using the adjust endpoint, and explicitly finish the package when the inventory is exhausted. 
 
 ## Tag Label
 
-Although not directly a part of the API, tag labels are a key part of the Metrc regulatory scheme. All plants must receive a tag label, as well as all products. Tags must be purchased from Metrc. You cannot order, or view available labels with the API. It also appears labels must be assigned using Metrc not the API, but I could be wrong. 
+Although not directly a part of the API, tag labels are a key part of the Metrc regulatory scheme. All plants must receive a tag label, as well as all packages. Tags must be purchased from Metrc. You cannot order, or view available labels with the API. If you are a shop that grows, or processes your own products you will likely need to interact with the Metrc system directly to assign labels.
 
 # Seed to Sale
 
-Now that we understand the basic objects we can apply them. The seed to sale process can be divided into three stages: growing, processing, and selling. Metrc monitors all of these stages, and the transfers between these stages. 
+Now that we understand the basic objects we can apply them. The seed to sale process can be divided into three stages: growing, processing, and selling. Metrc monitors all of these stages, and the transfers between these stages. The life-cycle begins with plant batches, which are seeds or clones. These become plants, which have a vegetative and flowering stage. Flowering plants are harvested into harvest objects. Harvests are then converted to packages, which are either sold or repackaged (i.e. processed). It's a bit more complicated than this though, so let's walk through everything.
 
 ## Growing
 
 ## Plant Batches
 
-The growing process begins with the plant batches endpoint. All plants begin as either seeds or clones at a specific facility. The createplantings endpoint is where new seeds or clones are entered into the stem. We must enter a strain from the strain endpoint when we create the seed or clone. Metrc calls this stage immature. A better name probably would have been unplanted. 
+The growing process begins with the plant batches endpoint. All plants begin as either seeds or clones at a specific facility. The createplantings endpoint is where new seeds or clones are entered into the system. If the seed or clone comes from an existing plant in your facility, you would add it using the plants create plantings endpoint where you would indicate which plant the seed or clone came from. If you take a cutting from an immature plant you would use the plantbatches create plantings endpoint. If the seed or clone comes from an existing package then we would use the create plantings endpoint for packages. We must enter a [strain](#strains) when we create the seed or clone. Metrc calls this stage immature. A better name probably would have been unplanted. 
 
-Once clones, or seeds are planted they enter the vegetative state. You would enter this change in the changegrowthphase endpoint. We must enter the [room](#rooms) the plant in grown in, which must be one of the rooms in the facility's room endpoint. Once a plant is in vegetative state we can add a Tag Label
+Once clones, or seeds are planted they enter the vegetative state. You must enter this change in the changegrowthphase endpoint. We input the [room](#rooms) the plant is grown in, and we need to add a [tag label](#tag-label) at some in vegetative process (different states have different rules on when exactly a plant must receive a tag label). Since the API doesn't have access to available tag labels, the user has to physically locate their available tag labels and manually enter the tag label unless they use Metrc's online interface where available tag labels are accessible. 
 
 Similarly, when the grower initiates the flowering stage this must be noted using the changegrowthphase endpoint. 
 
@@ -89,47 +93,55 @@ This endpoint provides several other bits of functionality:
 
 * View individual, active, or inactive batches. Inactive includes both plants that you have destroyed, and plants you have harvested in the past. Active includes only plants that are currently in the immature, vegetative, or flowering stages. 
 
-* Destroy plants: often times the problems arise during the growing process and batches of plants do not survive. When plants are discarded this must be recorded using the destroy endpoint.
+* Destroy plant batches: often times clones or seeds do not survive and must be disposed of. 
 
-* When cuttings are taken from vegetative or immature plants they are called clones, and they become new immature plants. This endpoint is an alternative to the createplantings endpoint. When you receive seeds or clones from another facility the create plantings is the endpoint; when you harvest seeds or clones from plants in the same facility use the create packages endpoint.
+* The create packages endpoint is where one adds immature plants to inventory to sell or transfer. 
 
 * The types endpoint indicates the two types of immature plants: seeds and clones. 
 
-* Metrc's own software appears to include the ability to add/monitor the nutrients used while growing. Unfortunately this functionality is outside the scope of the API.
+* Metrc's software includes the ability to add/monitor the nutrients used while growing. Additives can be added to individual plants, or entire rooms. Unfortunately this functionality is outside the scope of the API.
 
 ## Plants
 
-Plant batches are made up of individual plants. Information about individual plants is accessible by either ID number or label.
+Plant batches are made up of individual plants. Once plants enter the vegetative stage they are accessible by ID. You must be give a tag label during the vegetative phase at which point info about the plant is also available by label.
 
-You can also view all plants in each growing stage: vegetative, flowering, onhold, and inactive, which includes destroyed, and harvested plants. 
+You can view all plants in each growing stage: vegetative, flowering, onhold, and inactive, which includes destroyed, and harvested plants. 
 
 This endpoint allows you to:
 
 * Move plants from one room to another.
 
-* All the same functionality from plant batches, but on a individual level. This includes changing growth phases, destroying plants, creating clones and seeds. The reason for this duplication appears to be because plant batches includes immature plants, while plants only includes vegetative and flowering plants. So if you destroy, or create a clone from immature plants it has to be done on the plant batches level. 
+* All the same functionality from plant batches, but on a individual level. This includes changing growth phases, and destroying plants. 
 
-* Harvest and manicure plants. When we record harvesting and manicuring we must enter the room, the weight of the results of each individual plant, and the [unit of weight](#unit-of-weight). There is seemingly no way to edit the quantity of the harvest afterwards. The difference between manicuring and harvesting is that when we harvest we consume the plant, which renders it inactive. When manicuring, only part of the plant is removed.
+* Cuttings or seeds taken from your plants must be turned into new plant batches using the the create plantings endpoint.
+
+* Harvest and manicure plants. When we record harvesting and manicuring we must enter a name, the room, the weight of the results of each individual plant, and the [unit of weight](#unit-of-measure). There is seemingly no way to edit the quantity of the harvest afterwards. The difference between manicuring and harvesting is that when we harvest we consume the plant, which renders it inactive. When manicuring, only part of the plant is removed.
 
 ## Harvests
 
 Once manicured or harvested you can view the results via the harvest endpoint. You can view harvest info by id, or view all active, onhold, or inactive harvests. 
 
-There is also functionality for:
+Harvesting is a pretty detailed process where each plant must be weighed separately and entirely (i.e. you weigh the entire plant cut from the root ball).
+
+There is functionality for:
 
 * Converting harvests into [products](#products). 
 
 * Often times portions of the harvest are discarded. This is reported as waste with the removewaste endpoint.
 
-* Finish and unfinish harvests. This is the same idea as packages. You must explicitly finish a harvest after packaging or disposing of all the entire quantity. You cannot finish a harvest with remaining stock. The harvest info doesn't know with certainty that the plant batch it came from is complete (it could be the result of a manicuring not a harvest) so it is possible that more plants will be manicured/harvested from that plant batch, so finishing the product when its quantity is zero may be incorrect. 
+* Finish and unfinish harvests. This is the same idea as packages. You must explicitly finish a harvest after packaging or disposing of the entire quantity. You cannot finish a harvest with remaining stock. The harvest info doesn't know with certainty that the plant batch it came from is complete (it could be the result of a manicuring not a harvest) so it is possible that more plants will be manicured/harvested from that plant batch, so finishing the product when its quantity is zero may be incorrect, which is why the user is obligated to explicitly finish the harvest. 
+
+* Harvests must be processed to completion within 45 days (in Oregon at least).
 
 ## Processing
 
-So now we have finished growing Marijuana, and we have harvested it into products, mainly buds and shake at this point. 
+So now we have finished growing Cannabis, and we have harvested it into packages, mainly buds and shake at this point. 
 
 ## Transfers
 
-Rarely is Marijuana grown in the same facility it is processed, lab tested, or sold from so we will likely have to transfer this product to another facility for processing, testing or selling. The API does not allow you to generate transfers, only to view information about transfers.
+Rarely is Cannabis grown in the same facility it is processed, lab tested, or sold from so we will likely have to transfer this product to another facility for processing, testing or selling. The API does not allow you to generate transfers, only to view information about transfers. In Maryland there is no endpoint even for getting info about transfers. Transfers must be made, and processed through Metrc.
+
+If we want to convert flower into concentrate or edibles or anything else, we would enter this info in the packages create packages endpoint. 
 
 ## Lab Tests
 
@@ -139,9 +151,9 @@ When packages are lab tested the results are entered via the lab test endpoint. 
 
 ## Patients
 
-So now we've grown Marijuana and packaged, processed, tested, and transferred it to our selling facility. For Medical shops we must verify that all sales are made to a legitimate patient or caregiver. Patients must signup at each facility they purchase from, so the active patients list is facility specific.
+So now we've grown Cannabis and packaged, processed, tested, and transferred it to our selling facility. For Medical shops we must verify that all sales are made to a legitimate patient or caregiver. Patients must signup at each facility they purchase from, so the active patients list is facility specific.
 
-You can add patients to your facility using the add endpoint. You can edit, and remove patients as well. The patient license number will be used during sales. If the facility is recreational this endpoint is moot.
+You can add patients to your facility using the add endpoint. You can edit, and remove patients as well. The patient license number will be used during sales. If the facility is recreational this endpoint is moot. Oregon, and Alaska do not use this endpoint.
 
 ## Sales
 
@@ -149,4 +161,8 @@ The sales endpoint lets you retrieve information about past sales/transactions, 
 
 There are two primary data structures here: receipts, and transactions. An individual entering a store, and making a purchase is is a receipt; the individual packages sold in the receipt are the transactions. So every sale has one receipt, and each receipt can have multiple transactions. 
 
-The receipt endpoint allows you to enter the transactions for that sale, so it isn't clear what the value of the transaction post endpoint is. Perhaps it is for wholesale transactions, but I suspect that is related to transfers, and beyond the scope of the API. 
+The transaction endpoint is an alternative to the receipts endpoint. Rather than reporting individual receipts, you can report the total sales of each package for each day (i.e. how much you sold of a package and how much money you received).
+
+Different states require the use of different endpoints here so please check with your state to see whether or not you should use receipts or transactions endpoint. 
+
+Oregon and Alaska include separate endpoints for deliveries.
