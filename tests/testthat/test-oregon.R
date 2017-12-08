@@ -4,7 +4,8 @@ context("Test Oregon Sandbox")
 Sys.setenv(
   "metrc_software_key" = Sys.getenv("metrc_oregon_sandbox_software_key"),
   "metrc_user_key" =  Sys.getenv("metrc_oregon_sandbox_user_key"),
-  "metrc_state" = "OR"
+  "metrc_state" = "OR",
+  "metrc_demo" = "TRUE"
 )
 
 test_that("Environmental vars exist", {
