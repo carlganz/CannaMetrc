@@ -5,24 +5,8 @@
 
 metrc_get_item <- function(id) {
   stopifnot(is.integer(id))
-  
-  url <- modify_url(
-    BASE_URL(), path = paste0("items/v1/", id)
-  )
-  
-  resp <- GET(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>% 
-    map(shiny:::dropNullsOrEmpty) %>% as_tibble()
+  metrc_call("GET", "items/v1", id = id) %>% 
+    map(dropNullsOrEmpty) %>% as_tibble()
 }
 
 #' Get Active Items
@@ -31,27 +15,8 @@ metrc_get_item <- function(id) {
 #' @param license_number Facility license number
 
 metrc_get_items_active <- function(license_number) {
-  
-  url <- modify_url(
-    BASE_URL(), path = "items/v1/active",
-    query = list(
-      licenseNumber = license_number
-    )
-  )
-  
-  resp <- GET(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)  %>% 
-    map(shiny:::dropNullsOrEmpty) %>% bind_rows()
+  metrc_call("GET", "items/v1/active", license_number = license_number) %>% 
+    map(dropNullsOrEmpty) %>% bind_rows()
 }
 
 #' Get Items Categories
@@ -59,24 +24,9 @@ metrc_get_items_active <- function(license_number) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Items.get_items_v1_categories}
 
 metrc_get_items_categories <- function() {
-  
-  url <- modify_url(
-    BASE_URL(), path = "items/v1/categories"
-  )
-  
-  resp <- GET(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+  metrc_call("GET", "items/v1/categories") %>%
     bind_rows()
+  
 }
 
 #' Post New Items
@@ -93,37 +43,16 @@ metrc_post_items_create <- function(license_number,
                                  unit_thc_content_unit_of_measure,
                                  unit_weight,
                                  unit_weight_unit_of_measure) {
-  url <- modify_url(
-    BASE_URL(), path = "items/v1/create",
-    query = list(
-      licenseNumber = license_number
-    )
-  )
-  
-  resp <- POST(url, metrc_auth(), encode = "json",
-               body = data.frame(
-                 ItemCategory = item_category,
-                 Name = name,
-                 UnitOfMeasure = unit_of_measurement,
-                 Strain = strain,
-                 UnitThcContent = unit_thc_content,
-                 UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
-                 UnitWeight = unit_weight,
-                 UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
-               ))
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
-  
+  metrc_call("POST", "items/v1/create", license_number = license_number, body = data.frame(
+    ItemCategory = item_category,
+    Name = name,
+    UnitOfMeasure = unit_of_measurement,
+    Strain = strain,
+    UnitThcContent = unit_thc_content,
+    UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
+    UnitWeight = unit_weight,
+    UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
+  ))
 }
 
 #' Post Update Items
@@ -141,38 +70,17 @@ metrc_post_items_update <- function(license_number,
                                  unit_thc_content_unit_of_measure,
                                  unit_weight,
                                  unit_weight_unit_of_measure) {
-  url <- modify_url(
-    BASE_URL(), path = "items/v1/update",
-    query = list(
-      licenseNumber = license_number
-    )
-  )
-  
-  resp <- POST(url, metrc_auth(), 
-               encode = "json",
-               body = data.frame(
-                 Id = id,
-                 ItemCategory = item_category,
-                 Name = name,
-                 UnitOfMeasure = unit_of_measurement,
-                 Strain = strain,
-                 UnitThcContent = unit_thc_content,
-                 UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
-                 UnitWeight = unit_weight,
-                 UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
-               ))
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
+  metrc_call("POST", "items/v1/update", license_number = license_number, body = data.frame(
+    Id = id,
+    ItemCategory = item_category,
+    Name = name,
+    UnitOfMeasure = unit_of_measurement,
+    Strain = strain,
+    UnitThcContent = unit_thc_content,
+    UnitThcContentUnitOfMeasure = unit_thc_content_unit_of_measure,
+    UnitWeight = unit_weight,
+    UnitWeightUnitOfMeasure = unit_weight_unit_of_measure
+  ))
   
 }
 
@@ -182,29 +90,10 @@ metrc_post_items_update <- function(license_number,
 #' @param id Item ID
 #' @note See \url{https://api-co.metrc.com/Documentation/#Items.delete_items_v1_{id}}
 
-metrc_delete_item <- function(license_number,
-                                    id) {
+metrc_delete_item <- function(license_number, id) {
   stopifnot(is.integer(id))
-  
-  url <- modify_url(
-    BASE_URL(), path = paste0("items/v1/", id),
-    query = list(
-      licenseNumber = license_number
-    )
-  )
-  
-  resp <- DELETE(url, metrc_auth())
 
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n", 
-                http_status(resp)$message), call. = FALSE)
-  }
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
+  metrc_call("DELETE", "items/v1", id = id, license_number = license_number)
   
 }
 

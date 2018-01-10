@@ -3,22 +3,8 @@
 #' @note See \url{https://api-co.metrc.com/Documentation/#Rooms.get_rooms_v1_{id}}
 metrc_get_room <- function(id) {
   stopifnot(is.integer(id))
-  
-  url <- modify_url(BASE_URL(), path = paste0("rooms/v1/", id))
-  
-  resp <- GET(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n",
-                http_status(resp)$message),
-         call. = FALSE)
-  }
-  
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+
+  metrc_call("GET", "rooms/v1", id = id) %>%
     as_tibble()
 }
 
@@ -26,23 +12,8 @@ metrc_get_room <- function(id) {
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Rooms.get_rooms_v1_active}
 metrc_get_rooms_active <- function(license_number) {
-  url <- modify_url(BASE_URL(),
-                    path = "rooms/v1/active",
-                    query = list(licenseNumber = license_number))
   
-  resp <- GET(url, metrc_auth())
-  
-  if (http_type(resp) != "application/json") {
-    stop("metrc API did not return JSON.", call. = FALSE)
-  }
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n",
-                http_status(resp)$message),
-         call. = FALSE)
-  }
-  
-  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE) %>%
+  metrc_call("GET", "rooms/v1/active", license_number = license_number) %>%
     bind_rows()
 }
 
@@ -50,52 +21,21 @@ metrc_get_rooms_active <- function(license_number) {
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Rooms.post_rooms_v1_create}
 metrc_post_rooms <- function(license_number, name) {
-  url <- modify_url(BASE_URL(),
-                    path = "rooms/v1/create",
-                    query = list(licenseNumber = license_number))
   
-  resp <- POST(url, metrc_auth(), body = list(
+  metrc_call("POST", "rooms/v1/create", license_number = license_number, body = data.frame(
     Name = name
   ))
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n",
-                http_status(resp)$message),
-         call. = FALSE)
-  }
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
-  
 }
 
 #' Post Update Room
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Rooms.post_rooms_v1_update}
 metrc_post_rooms_update <- function(license_number, id, name) {
-  url <- modify_url(BASE_URL(),
-                    path = "rooms/v1/update",
-                    query = list(licenseNumber = license_number))
   
-  resp <- POST(url, metrc_auth(), body = data.frame(
+  metrc_call("POST", "rooms/v1/update", license_number = license_number, body = data.frame(
     Id = id,
     Name = name
   ))
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n",
-                http_status(resp)$message),
-         call. = FALSE)
-  }
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
   
 }
 
@@ -104,22 +44,6 @@ metrc_post_rooms_update <- function(license_number, id, name) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Rooms.delete_rooms_v1_{id}}
 metrc_delete_room <- function(license_number, id) {
   stopifnot(is.integer(id))
-  
-  url <- modify_url(BASE_URL(), path = paste0("rooms/v1/", id),
-                    query = list(licenseNumber = license_number))
-  
-  resp <- DELETE(url, metrc_auth())
-  
-  if (http_error(resp)) {
-    stop(paste0("metrc API errored:\n",
-                http_status(resp)$message),
-         call. = FALSE)
-  }
-  
-  if (http_type(resp) != "application/json") {
-    return(TRUE)
-  } else {
-    fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
-  }
+  metrc_call("DELETE", "rooms/v1", id = id, license_number = license_number)
   
 }

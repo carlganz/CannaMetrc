@@ -11,3 +11,46 @@ BASE_URL <- memoise::memoise(function(state = Sys.getenv("metrc_state"), demo = 
   
 })
 
+#' @import shiny
+dropNulls <- getFromNamespace("dropNulls", "shiny")
+dropNullsOrEmpty <- getFromNamespace("dropNullsOrEmpty", "shiny")
+
+metrc_call <- function(type = c("GET", "POST", "PUT", "DELETE"), endpoint = c(), id = NULL, license_number = NULL, body = NULL) {
+  url <- modify_url(BASE_URL(), path = paste0(endpoint, if (!is.null(id)) paste0("/", id)), query = list(
+    licenseNumber = license_number
+  ))
+  
+  type <- match.arg(type)
+  # endpoint <- match.arg(endpoint)
+  
+  resp <- switch(type,
+                 GET = GET(url, metrc_auth(), httr::accept_json(), user_agent("CannaData")),
+                 POST = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData")),
+                 PUT = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData")),
+                 DELETE = DELETE(url, metrc_auth(), httr::accept_json(), user_agent("CannaData"))
+  )
+  if (type == "GET") {
+  if (!(http_type(resp) %in% c("application/json", "text/json"))) {
+    print(http_status(resp)$message)
+    stop("Metrc API did not return JSON.", call. = FALSE)
+  }
+  
+  if (http_error(resp)) {
+    print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
+    stop(paste("Metrc API errored:", 
+               http_status(resp)$message, sep = "\n"), call. = FALSE)
+  }
+  } else {
+    if (http_error(resp)) {
+      print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
+      stop(paste("Metrc API errored:", 
+                 http_status(resp)$message, sep = "\n"), call. = FALSE)
+    } else {
+      return(TRUE)
+    }
+  }
+  
+  fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  
+  
+}
