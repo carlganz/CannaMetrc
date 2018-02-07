@@ -2,20 +2,13 @@
 % Please edit documentation in R/sales.R
 \name{metrc_delete_sales_receipt}
 \alias{metrc_delete_sales_receipt}
-\alias{metrc_delete_sales_receipt}
 \title{Delete Receipt}
 \usage{
-metrc_delete_sales_receipt(license_number, id)
-
 metrc_delete_sales_receipt(license_number, id)
 }
 \description{
 Delete Receipt
-
-Delete Delivery
 }
 \note{
 See \url{https://api-co.metrc.com/Documentation/#Sales.delete_sales_v1_receipts_{id}}
-
-See \url{https://api-or.metrc.com/Documentation/#Sales.delete_sales_v1_delivery_{id}}
 }

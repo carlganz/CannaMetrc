@@ -171,7 +171,7 @@ metrc_complete_deliveries <- function(license_number, deliveries) {
 #' Delete Delivery
 #' @export
 #' @note See \url{https://api-or.metrc.com/Documentation/#Sales.delete_sales_v1_delivery_{id}}
-metrc_delete_sales_receipt <- function(license_number, id) {
+metrc_delete_delivery <- function(license_number, id) {
   stopifnot(is.integer(id))
   metrc_call("DELETE", "sales/v1/delivery", id = id, license_number = license_number)
   
