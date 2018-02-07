@@ -5,7 +5,7 @@ metrc_auth <- memoise::memoise(function(software_key = Sys.getenv("metrc_softwar
 })
 
 BASE_URL <- memoise::memoise(function(state = Sys.getenv("metrc_state"), demo = Sys.getenv("metrc_demo")) {
-  state <- match.arg(state, c("CO", "OR", "MD", "AK", "MI", "CA", "OH"))
+  state <- match.arg(state, c("CA", "CO", "OR", "MD", "AK", "MI", "CA", "OH"))
   
   sprintf(paste0("https://", if (as.logical(demo)) {"sandbox-"}, "api-%s.metrc.com/"), tolower(state))
   
@@ -25,8 +25,8 @@ metrc_call <- function(type = c("GET", "POST", "PUT", "DELETE"), endpoint = c(),
   
   resp <- switch(type,
                  GET = GET(url, metrc_auth(), httr::accept_json(), user_agent("CannaData")),
-                 POST = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData")),
-                 PUT = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData")),
+                 POST = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData"), httr::content_type_json()),
+                 PUT = POST(url, metrc_auth(), body = body, encode = "json", httr::accept_json(), user_agent("CannaData"), httr::content_type_json()),
                  DELETE = DELETE(url, metrc_auth(), httr::accept_json(), user_agent("CannaData"))
   )
   if (type == "GET") {
