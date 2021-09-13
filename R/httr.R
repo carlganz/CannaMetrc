@@ -42,6 +42,8 @@ metrc_call <- function(type = c("GET", "POST", "PUT", "DELETE"), endpoint = c(),
   }
   } else {
     if (http_error(resp)) {
+      print(paste("Metrc API errored:", 
+                 http_status(resp)$message, sep = "\n"))
       print(fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE))
       stop(paste("Metrc API errored:", 
                  http_status(resp)$message, sep = "\n"), call. = FALSE)
