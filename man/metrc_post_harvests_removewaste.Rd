@@ -4,8 +4,13 @@
 \alias{metrc_post_harvests_removewaste}
 \title{Post Harvest Waste}
 \usage{
-metrc_post_harvests_removewaste(license_number, id, unit_of_weight,
-  waste_weight, actual_date)
+metrc_post_harvests_removewaste(
+  license_number,
+  id,
+  unit_of_weight,
+  waste_weight,
+  actual_date
+)
 }
 \arguments{
 \item{license_number}{Facility license number}

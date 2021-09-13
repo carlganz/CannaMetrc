@@ -4,10 +4,22 @@
 \alias{metrc_post_harvests_createpackage}
 \title{Post New Harvest}
 \usage{
-metrc_post_harvests_createpackage(license_number, harvest, item, weight,
-  unit_of_weight, tag, is_production_batch, production_batch_number,
-  product_requires_remediation, remediate_product, remediation_method_id,
-  remediation_date, remediation_steps, actual_date)
+metrc_post_harvests_createpackage(
+  license_number,
+  harvest,
+  item,
+  weight,
+  unit_of_weight,
+  tag,
+  is_production_batch,
+  production_batch_number,
+  product_requires_remediation,
+  remediate_product,
+  remediation_method_id,
+  remediation_date,
+  remediation_steps,
+  actual_date
+)
 }
 \arguments{
 \item{license_number}{Facility license number}

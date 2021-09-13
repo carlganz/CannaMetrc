@@ -4,8 +4,15 @@
 \alias{metrc_post_packages_adjust}
 \title{Post Adjust Package}
 \usage{
-metrc_post_packages_adjust(license_number, label, quantity, unit_of_measure,
-  adjustment_reason, adjustment_date, reason_note)
+metrc_post_packages_adjust(
+  license_number,
+  label,
+  quantity,
+  unit_of_measure,
+  adjustment_reason,
+  adjustment_date,
+  reason_note
+)
 }
 \description{
 Post Adjust Package

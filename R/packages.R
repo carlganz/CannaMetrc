@@ -50,14 +50,14 @@ metrc_get_packages_types <- function() {
 #' Get Package Adjustment Reasons
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.get_packages_v1_adjust_reasons}
-metrc_get_adjust_reasons <- function() {
-  metrc_call("GET", "packages/v1/adjust/reasons") %>%
+metrc_get_adjust_reasons <- function(licenseNumber = NULL) {
+  metrc_call("GET", "packages/v1/adjust/reasons", licenseNumber = licenseNumber) %>%
     unlist() %>% as.vector()
 }
 
 #' Post New Package
 #' @export
-#' @param ingredients list-col 
+#' @param ingredients list-col
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_create}
 
 metrc_post_packages_create <- function(license_number,
@@ -86,7 +86,7 @@ metrc_post_packages_create <- function(license_number,
 
 #' Post New Package Testing
 #' @export
-#' @param ingredients list-col 
+#' @param ingredients list-col
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_create_testing}
 
 metrc_post_packages_testing <- function(license_number,
@@ -110,7 +110,7 @@ metrc_post_packages_testing <- function(license_number,
     ActualDate = actual_date,
     Ingredients = list(ingredients)
   )))
-  
+
 }
 
 #' Post New Package Plantings
@@ -154,18 +154,18 @@ metrc_post_packages_change <- function(license_number,
 #' Post Adjust Package
 #' @export
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_adjust}
-metrc_post_packages_adjust <- function(license_number, label, quantity, 
+metrc_post_packages_adjust <- function(license_number, label, quantity,
                                    unit_of_measure, adjustment_reason,
                                    adjustment_date, reason_note) {
   metrc_call("POST", "packages/v1/adjust", license_number = license_number, body = data.frame(
     Label = label,
-    Quantity = quantity, 
-    UnitOfMeasure = unit_of_measure, 
+    Quantity = quantity,
+    UnitOfMeasure = unit_of_measure,
     AdjustmentReason = adjustment_reason,
-    AdjustmentDate = adjustment_date, 
+    AdjustmentDate = adjustment_date,
     ReasonNote = reason_note
   ))
-  
+
 }
 
 #' Post Finish Package
@@ -176,7 +176,7 @@ metrc_post_packages_finish <- function(license_number, label, actual_date) {
     Label = label,
     ActualDate = actual_date
   ))
-  
+
 }
 
 #' Post Unfinish Package
@@ -184,7 +184,7 @@ metrc_post_packages_finish <- function(license_number, label, actual_date) {
 #' @note See \url{https://api-co.metrc.com/Documentation/#Packages.post_packages_v1_unfinish}
 metrc_post_packages_unfinish <- function(license_number, label) {
   metrc_call("POST", "packages/v1/unfinish", license_number = license_number, body = data.frame(Label = label))
-  
+
 }
 
 #' Post Remediate Package
@@ -193,9 +193,9 @@ metrc_post_packages_unfinish <- function(license_number, label) {
 metrc_post_packages_remediate <- function(license_number, package_label, remediation_method_name,
                                          remediation_date, remediation_steps) {
   metrc_call("POST", "packages/v1/remediate", license_number = license_number, body = data.frame(
-    PackageLabel = package_label, 
+    PackageLabel = package_label,
     RemediationMethodName = remediation_method_name,
-    RemediationDate = remediation_date, 
+    RemediationDate = remediation_date,
     RemediationSteps = remediation_steps
   ))
 }

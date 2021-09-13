@@ -4,9 +4,16 @@
 \alias{metrc_post_patients_update}
 \title{Post Update Patient}
 \usage{
-metrc_post_patients_update(license_number, patient_license_number,
-  new_license_number, license_effective_start_date, license_effective_end_date,
-  recommended_plants, recommended_smokable_quantity, actual_date)
+metrc_post_patients_update(
+  license_number,
+  patient_license_number,
+  new_license_number,
+  license_effective_start_date,
+  license_effective_end_date,
+  recommended_plants,
+  recommended_smokable_quantity,
+  actual_date
+)
 }
 \description{
 Post Update Patient

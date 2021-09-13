@@ -4,8 +4,15 @@
 \alias{metrc_post_plants_manicure}
 \title{Post Manicure Plants}
 \usage{
-metrc_post_plants_manicure(license_number, plant, weight, unit_of_weight,
-  drying_room, harvest_name, actual_date)
+metrc_post_plants_manicure(
+  license_number,
+  plant,
+  weight,
+  unit_of_weight,
+  drying_room,
+  harvest_name,
+  actual_date
+)
 }
 \description{
 Post Manicure Plants

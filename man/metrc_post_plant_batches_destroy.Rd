@@ -4,8 +4,13 @@
 \alias{metrc_post_plant_batches_destroy}
 \title{Post Destroy Plant}
 \usage{
-metrc_post_plant_batches_destroy(license_number, id, count, reason_note,
-  actual_date)
+metrc_post_plant_batches_destroy(
+  license_number,
+  id,
+  count,
+  reason_note,
+  actual_date
+)
 }
 \description{
 Post Destroy Plant

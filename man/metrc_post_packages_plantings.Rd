@@ -4,9 +4,17 @@
 \alias{metrc_post_packages_plantings}
 \title{Post New Package Plantings}
 \usage{
-metrc_post_packages_plantings(license_number, package_label,
-  package_adjustment_amount, package_adjustment_amount_unit_of_measure_name,
-  plant_batch_name, plant_batch_type, plant_count, strain_name, planted_date)
+metrc_post_packages_plantings(
+  license_number,
+  package_label,
+  package_adjustment_amount,
+  package_adjustment_amount_unit_of_measure_name,
+  plant_batch_name,
+  plant_batch_type,
+  plant_count,
+  strain_name,
+  planted_date
+)
 }
 \description{
 Post New Package Plantings

@@ -4,8 +4,16 @@
 \alias{metrc_post_strains_update}
 \title{Post Update Strains}
 \usage{
-metrc_post_strains_update(license_number, id, name, testing_status, thc_level,
-  cbd_level, indica_percentage, sativa_percentage)
+metrc_post_strains_update(
+  license_number,
+  id,
+  name,
+  testing_status,
+  thc_level,
+  cbd_level,
+  indica_percentage,
+  sativa_percentage
+)
 }
 \description{
 Post Update Strains

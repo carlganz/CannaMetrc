@@ -4,8 +4,14 @@
 \alias{metrc_post_plant_batchs_create_plantings}
 \title{Post Create Plantings}
 \usage{
-metrc_post_plant_batchs_create_plantings(license_number, name, type, count,
-  strain, actual_date)
+metrc_post_plant_batchs_create_plantings(
+  license_number,
+  name,
+  type,
+  count,
+  strain,
+  actual_date
+)
 }
 \description{
 Post Create Plantings

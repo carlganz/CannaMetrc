@@ -4,8 +4,13 @@
 \alias{metrc_post_packages_remediate}
 \title{Post Remediate Package}
 \usage{
-metrc_post_packages_remediate(license_number, package_label,
-  remediation_method_name, remediation_date, remediation_steps)
+metrc_post_packages_remediate(
+  license_number,
+  package_label,
+  remediation_method_name,
+  remediation_date,
+  remediation_steps
+)
 }
 \description{
 Post Remediate Package

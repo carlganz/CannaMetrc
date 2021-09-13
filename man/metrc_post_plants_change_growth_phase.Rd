@@ -4,8 +4,15 @@
 \alias{metrc_post_plants_change_growth_phase}
 \title{Post Move Plants}
 \usage{
-metrc_post_plants_change_growth_phase(license_number, id, label, new_tag,
-  growth_phase, new_room, growth_date)
+metrc_post_plants_change_growth_phase(
+  license_number,
+  id,
+  label,
+  new_tag,
+  growth_phase,
+  new_room,
+  growth_date
+)
 }
 \description{
 Post Move Plants

@@ -4,8 +4,14 @@
 \alias{metrc_put_sales_transactions_date}
 \title{Put Sales Transactions by Date}
 \usage{
-metrc_put_sales_transactions_date(license_number, date, package_label, quantity,
-  unit_of_measure, total_amount)
+metrc_put_sales_transactions_date(
+  license_number,
+  date,
+  package_label,
+  quantity,
+  unit_of_measure,
+  total_amount
+)
 }
 \description{
 Put Sales Transactions by Date

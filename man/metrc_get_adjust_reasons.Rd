@@ -4,7 +4,7 @@
 \alias{metrc_get_adjust_reasons}
 \title{Get Package Adjustment Reasons}
 \usage{
-metrc_get_adjust_reasons()
+metrc_get_adjust_reasons(licenseNumber = NULL)
 }
 \description{
 Get Package Adjustment Reasons

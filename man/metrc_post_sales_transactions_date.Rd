@@ -4,8 +4,14 @@
 \alias{metrc_post_sales_transactions_date}
 \title{Post Sales Transactions by Date}
 \usage{
-metrc_post_sales_transactions_date(license_number, date, package_label,
-  quantity, unit_of_measure, total_amount)
+metrc_post_sales_transactions_date(
+  license_number,
+  date,
+  package_label,
+  quantity,
+  unit_of_measure,
+  total_amount
+)
 }
 \description{
 Post Sales Transactions by Date

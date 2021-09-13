@@ -4,8 +4,14 @@
 \alias{metrc_post_plant_batches_create_packages}
 \title{Post Create Packages}
 \usage{
-metrc_post_plant_batches_create_packages(license_number, id, item, tag, count,
-  actual_date)
+metrc_post_plant_batches_create_packages(
+  license_number,
+  id,
+  item,
+  tag,
+  count,
+  actual_date
+)
 }
 \description{
 Post Create Packages
